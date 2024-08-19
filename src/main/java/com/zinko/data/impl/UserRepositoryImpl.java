@@ -9,7 +9,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +34,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Value("${file.name.supporting}")
     private String supportingFileName;
 
+
     @Override
     public User saveUser(User user) {
         user.setId(UserIdGenerator.getNewUserId());
@@ -44,6 +51,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> getUserById(Long id) {
+        checkFile();
         try (FileReader fileReader = new FileReader(basicFileName);
              BufferedReader reader = new BufferedReader(fileReader)) {
             String line;
@@ -66,6 +74,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> getUserByEmail(String email) {
+        checkFile();
         try (FileReader fileReader = new FileReader(basicFileName);
              BufferedReader reader = new BufferedReader(fileReader)) {
             String line;
@@ -88,6 +97,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<User> getAllUsers() {
+        checkFile();
         List<String> users = new ArrayList<>();
         try (FileReader fileReader = new FileReader(basicFileName);
              BufferedReader reader = new BufferedReader(fileReader)) {
@@ -135,17 +145,6 @@ public class UserRepositoryImpl implements UserRepository {
         return updated;
     }
 
-    private void changeFiles() {
-        File file = new File(basicFileName);
-        if (!file.delete()) {
-            throw new ServerException(SERVER_ERROR_MESSAGE);
-        }
-        File newFile = new File(supportingFileName);
-        if (!newFile.renameTo(new File(basicFileName))) {
-            throw new ServerException(SERVER_ERROR_MESSAGE);
-        }
-    }
-
     @Override
     public boolean deleteUserById(Long id) {
         boolean deleted = false;
@@ -171,5 +170,27 @@ public class UserRepositoryImpl implements UserRepository {
         }
         changeFiles();
         return deleted;
+    }
+
+    private void changeFiles() {
+        File file = new File(basicFileName);
+        if (!file.delete()) {
+            throw new ServerException(SERVER_ERROR_MESSAGE);
+        }
+        File newFile = new File(supportingFileName);
+        if (!newFile.renameTo(new File(basicFileName))) {
+            throw new ServerException(SERVER_ERROR_MESSAGE);
+        }
+    }
+
+    private void checkFile() {
+        File file = new File(basicFileName);
+        if(!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                throw new ServerException(SERVER_ERROR_MESSAGE);
+            }
+        }
     }
 }
