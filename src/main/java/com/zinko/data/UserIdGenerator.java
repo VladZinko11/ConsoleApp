@@ -27,7 +27,6 @@ public class UserIdGenerator {
     }
 
     public static Long getNewUserId() {
-        lastExistId++;
-        return lastExistId;
+        return lastExistId++;
     }
 }
