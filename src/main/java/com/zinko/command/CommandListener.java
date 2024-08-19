@@ -1,22 +1,22 @@
 package com.zinko.command;
 
-import com.zinko.ConsoleAppContext;
 import com.zinko.service.exception.BadCredentialsException;
 import com.zinko.service.exception.ConsoleAppException;
 import com.zinko.service.exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import java.util.Scanner;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class CommandListener {
 
-    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsoleAppContext.class);
+    private final CommandFactory commandFactory;
 
-    public void handleCommand() {
+    public void ListenCommand() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("""
                 Enter command:
@@ -30,15 +30,13 @@ public class CommandListener {
 
         while (true) {
             String command = scanner.nextLine();
-            if (Objects.equals(command, "exit")) {
-                return;
-            }
             try {
-                Command commandInstance = context.getBean(command, Command.class);
+                Command commandInstance = commandFactory.getCommand(command);
+                if(commandInstance==null) {
+                    System.out.println("Not found command " + command);
+                    continue;
+                }
                 commandInstance.handle(scanner);
-            } catch (NoSuchBeanDefinitionException e) {
-                System.out.println("Not found command " + command);
-                log.error("Not found command {}", command, e);
             }
             catch (NotFoundException | BadCredentialsException | NumberFormatException e) {
                 System.out.println(e.getMessage());
