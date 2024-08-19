@@ -19,8 +19,12 @@ public class UserIdGenerator {
         File fileReader = new File("File.txt");
         try (ReversedLinesFileReader reader = new ReversedLinesFileReader(fileReader)) {
             String line = reader.readLine();
-            String[] split = line.split(" \\| ", 2);
-            lastExistId = Long.parseLong(split[0]);
+            if(line!=null) {
+                String[] split = line.split(" \\| ", 2);
+                lastExistId = Long.parseLong(split[0]);
+            } else {
+                lastExistId=0L;
+            }
         } catch (IOException e) {
             throw new ConsoleAppException("I/O error occurs");
         }
