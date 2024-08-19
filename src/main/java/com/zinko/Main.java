@@ -1,7 +1,12 @@
 package com.zinko;
 
+import com.zinko.command.CommandListener;
+
+
 public class Main {
+
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        CommandListener commandListener = new CommandListener();
+        commandListener.handleCommand();
     }
 }
